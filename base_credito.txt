@@ -1,0 +1,36 @@
+
+
+### Base de dados de Crédito
+
+credito = read.csv("creditdata.csv",sep = ',')
+summary(credito)
+credito$cliente = NULL # apaga a coluna Cliente
+mean(credito$idade[credito$idade>0],na.rm = TRUE)
+credito$idade = ifelse(is.na(credito$idade), mean(credito$idade, na.rm = TRUE), credito$idade)
+credito$pagamento = factor(credito$pagamento, levels = c(0,1))
+
+library(caTools)
+set.seed(12345)
+divisao = sample.split(credito$renda, SplitRatio = 0.75)
+treinamento = subset(credito, divisao == TRUE)
+teste = subset(credito, divisao == FALSE)
+
+library(rpart)
+classificador = rpart(formula = pagamento ~ ., data = treinamento)
+print(classificador)
+
+library(rpart.plot)
+rpart.plot(classificador)
+
+### Matriz de confusão
+
+
+previsoes = predict(classificador, newdata = teste[-4], type = 'class')
+matriz_confusao = table(teste[, 4], previsoes)
+print(matriz_confusao)
+
+library(caret)
+confusionMatrix(matriz_confusao)
+
+
+
